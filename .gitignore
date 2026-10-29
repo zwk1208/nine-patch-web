@@ -1,0 +1,24 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local development output
+*.log
+coverage/
+dist/
+build/
+
+# Dependency directories
+node_modules/
+
+# Local environment files
+.env
+.env.*
+!.env.example

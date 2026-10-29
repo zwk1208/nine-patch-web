@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101827" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml" />
+    <title>九宫格 .9.png 制作工具</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">ANDROID ASSET TOOL</p>
+          <h1>九宫格 <span>.9.png</span> 制作工具</h1>
+          <p class="subtitle">拖入图片后标记拉伸和内容区域，实时预览并导出 Android .9.png。</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="export-cluster">
+            <span class="export-note">带黑线原始 .9 图 / 无黑线处理后 .9 图；ZIP 分别只含对应版本</span>
+            <div class="export-buttons">
+              <button class="button button-help" id="helpButton" type="button" title="查看网页使用说明" aria-haspopup="dialog">
+                <span aria-hidden="true">?</span> 使用说明
+              </button>
+              <button class="button button-secondary" id="exportButton" type="button" disabled title="导出原始.9图(带黑线)" aria-label="导出原始.9图(带黑线)">
+                <span aria-hidden="true">↓</span> 导出原始.9图(带黑线)
+              </button>
+              <button class="button button-secondary" id="compiledExportButton" type="button" disabled title="导出处理后.9图(无黑线)" aria-label="导出处理后.9图(无黑线)">
+                <span aria-hidden="true">↓</span> 导出处理后.9图(无黑线)
+              </button>
+              <button class="button button-secondary" id="rawZipExportButton" type="button" disabled title="导出原始.9图(带黑线).zip" aria-label="导出原始.9图(带黑线).zip">
+                <span aria-hidden="true">↓</span> 导出原始.9图(带黑线).zip
+              </button>
+              <button class="button button-secondary" id="compiledZipExportButton" type="button" disabled title="导出处理后.9图(无黑线).zip" aria-label="导出处理后.9图(无黑线).zip">
+                <span aria-hidden="true">↓</span> 导出处理后.9图(无黑线).zip
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="workspace" aria-label="九宫格编辑工作区">
+        <section class="panel canvas-panel">
+          <div class="panel-heading canvas-heading">
+            <div>
+              <h2>编辑标记</h2>
+            </div>
+            <div class="zoom-control">
+              <button class="icon-button" id="zoomOut" type="button" aria-label="缩小">−</button>
+              <span id="zoomLabel">100%</span>
+              <button class="icon-button" id="zoomIn" type="button" aria-label="放大">＋</button>
+              <button class="text-button" id="zoomReset" type="button">重置</button>
+            </div>
+          </div>
+          <div class="canvas-stage" id="canvasStage">
+            <div class="canvas-drop-hint" id="canvasDropHint">松开以导入图片</div>
+            <div class="empty-state" id="emptyState">
+              <div class="empty-illustration" aria-hidden="true">▧</div>
+              <h3>还没有图片</h3>
+              <p>导入一张图片后，在这里拖动标记线。</p>
+              <p class="drop-only-note">将 PNG / JPG / WebP 直接拖入此编辑区域</p>
+            </div>
+            <div class="editor-wrap hidden" id="editorWrap">
+              <div class="canvas-stack" id="canvasStack">
+                <canvas id="imageCanvas" aria-label="图片编辑画布"></canvas>
+                <div class="canvas-overlay" id="canvasOverlay">
+                  <div class="guide guide-left" data-edge="left"></div>
+                  <div class="guide guide-right" data-edge="right"></div>
+                  <div class="guide guide-top" data-edge="top"></div>
+                  <div class="guide guide-bottom" data-edge="bottom"></div>
+                  <div class="content-area-fill"></div>
+                  <div class="content-guide content-left" data-edge="contentLeft"></div>
+                  <div class="content-guide content-right" data-edge="contentRight"></div>
+                  <div class="content-guide content-top" data-edge="contentTop"></div>
+                  <div class="content-guide content-bottom" data-edge="contentBottom"></div>
+                  <div class="drag-hint" id="dragHint">拖动线条调整标记</div>
+                  <div class="drag-readout" id="dragReadout" aria-live="polite"></div>
+                </div>
+                <button class="editor-zoom-handle editor-zoom-nw" data-zoom-direction="nw" type="button" aria-label="从左上角缩放编辑图片"></button>
+                <button class="editor-zoom-handle editor-zoom-ne" data-zoom-direction="ne" type="button" aria-label="从右上角缩放编辑图片"></button>
+                <button class="editor-zoom-handle editor-zoom-sw" data-zoom-direction="sw" type="button" aria-label="从左下角缩放编辑图片"></button>
+                <button class="editor-zoom-handle editor-zoom-se" data-zoom-direction="se" type="button" aria-label="从右下角缩放编辑图片"></button>
+              </div>
+            </div>
+          </div>
+          <div class="marker-controls" aria-label="标记参数">
+            <span class="marker-controls-title">标记参数</span>
+            <div class="mode-switch" role="tablist" aria-label="编辑模式">
+              <button class="mode-button active" data-mode="stretch" type="button" role="tab" aria-selected="true">拉伸</button>
+              <button class="mode-button" data-mode="content" type="button" role="tab" aria-selected="false">内容</button>
+            </div>
+            <div class="coordinate-grid">
+              <label><span>左</span><div class="field-wrap"><input id="leftInput" type="number" min="0" step="1" value="0" /><em>px</em></div></label>
+              <label><span>右</span><div class="field-wrap"><input id="rightInput" type="number" min="0" step="1" value="0" /><em>px</em></div></label>
+              <label><span>上</span><div class="field-wrap"><input id="topInput" type="number" min="0" step="1" value="0" /><em>px</em></div></label>
+              <label><span>下</span><div class="field-wrap"><input id="bottomInput" type="number" min="0" step="1" value="0" /><em>px</em></div></label>
+            </div>
+            <button class="button button-secondary" id="resetButton" type="button" disabled>重置</button>
+          </div>
+          <div class="legend">
+            <span><i class="legend-line stretch"></i>拉伸区域</span>
+            <span><i class="legend-line content"></i>内容区域</span>
+            <span class="legend-tip">当前编辑：<b id="modeLabel">拉伸区域</b></span>
+          </div>
+        </section>
+
+        <section class="panel preview-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>实时预览</h2>
+            </div>
+            <span class="preview-badge">.9 PNG</span>
+            <span class="effect-size" id="effectSize"></span>
+            <label class="preview-toggle" title="在当前蓝色内容区域内铺满示例文案">
+              <input id="previewTextToggle" type="checkbox" />
+              <span>文案预览</span>
+            </label>
+          </div>
+          <div class="effect-stage" id="effectStage">
+            <div class="resize-preview-wrap hidden" id="resizePreviewWrap">
+              <canvas class="effect-canvas" id="effectCanvas"></canvas>
+              <button class="resize-handle handle-nw" data-direction="nw" type="button" aria-label="调整预览左上角"></button>
+              <button class="resize-handle handle-ne" data-direction="ne" type="button" aria-label="调整预览右上角"></button>
+              <button class="resize-handle handle-sw" data-direction="sw" type="button" aria-label="调整预览左下角"></button>
+              <button class="resize-handle handle-se" data-direction="se" type="button" aria-label="调整预览右下角"></button>
+            </div>
+          </div>
+          <div class="preview-details">
+            <div><span>导出尺寸</span><strong id="outputSize">—</strong></div>
+            <div><span>标记边框</span><strong>外围 1px</strong></div>
+            <div><span>导出格式</span><strong>PNG / .9.png</strong></div>
+          </div>
+          <div class="notice" id="notice">
+            <span aria-hidden="true">✓</span>
+            <p>“原始”保留外围黑线，适合交给 aapt/aapt2；“编译”会去掉黑线并写入 npTc chunk。Windows 若拦截 ZIP，请在文件属性中点击“解除锁定”，或先复制到本地工作目录再解压。</p>
+          </div>
+        </section>
+      </section>
+      <footer>本工具不会上传图片，所有处理均在当前浏览器完成。</footer>
+    </main>
+    <dialog class="help-dialog" id="helpDialog" aria-labelledby="helpTitle">
+      <div class="help-dialog-card">
+        <div class="help-dialog-heading">
+          <div>
+            <p class="section-kicker">QUICK GUIDE</p>
+            <h2 id="helpTitle">网页使用说明</h2>
+          </div>
+          <button class="icon-button" id="helpCloseButton" type="button" aria-label="关闭使用说明">×</button>
+        </div>
+        <div class="help-dialog-body">
+          <p><strong>1. 导入图片</strong><br />将 PNG、JPG 或 WebP 直接拖入左侧编辑画布。</p>
+          <p><strong>2. 编辑标记</strong><br />拖动红色边线设置拉伸区域，切换“内容”后蓝色边线会自动置于上层，方便直接拖动设置内容区域，也可以直接输入像素值。</p>
+          <p><strong>3. 查看预览</strong><br />右侧预览按当前标记实时渲染，拖动四角手柄可调整预览尺寸。</p>
+          <p><strong>4. 导出文件</strong><br />原始版保留外围黑线；处理后版写入 npTc 且不显示黑线。ZIP 只包含对应的一种文件。</p>
+          <p class="help-dialog-note">所有处理均在浏览器本地完成，不会上传图片。</p>
+        </div>
+        <button class="button button-primary help-dialog-done" id="helpDoneButton" type="button">知道了</button>
+      </div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>
